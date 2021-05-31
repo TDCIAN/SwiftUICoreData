@@ -11,7 +11,8 @@ import CoreData
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    @FetchRequest(sortDescriptors: [])
+    // sort 방식은 sortDescriptors 안에서 정한다
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \Task.date, ascending: false)])
     private var tasks: FetchedResults<Task>
     
     var body: some View {
@@ -19,7 +20,10 @@ struct ContentView: View {
             List {
                 ForEach(tasks) { task in
                     Text(task.title ?? "Untitled")
-                }
+                        .onTapGesture(count: 1) {
+                            updateTask(task)
+                        }
+                }.onDelete(perform: deleteTasks)
             }
             .navigationTitle("Todo List")
             .navigationBarItems(trailing: Button("Add Task") {
@@ -37,6 +41,20 @@ struct ContentView: View {
         }
     }
     
+    private func updateTask(_ task: FetchedResults<Task>.Element) {
+        withAnimation {
+            task.title = "Updated"
+            saveContext()
+        }
+    }
+    
+    private func deleteTasks(offsets: IndexSet) {
+        withAnimation {
+            offsets.map { tasks[$0] }.forEach(viewContext.delete)
+            saveContext()
+        }
+    }
+    
     private func addTask() {
         withAnimation {
             let newTask = Task(context: viewContext)
@@ -44,7 +62,7 @@ struct ContentView: View {
             newTask.date = Date()
             
             saveContext()
-        }        
+        }
     }
 }
 
