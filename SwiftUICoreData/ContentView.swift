@@ -6,6 +6,11 @@
 //
 
 import SwiftUI
+import CoreData
+
+struct Test {
+    let task: Task
+}
 
 struct ContentView: View {
     var body: some View {
